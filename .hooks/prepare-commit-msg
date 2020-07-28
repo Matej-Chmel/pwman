@@ -1,0 +1,8 @@
+#!/bin/sh
+
+echo prepare-commit-msg called
+
+cd .hooks
+
+py -m python.format_message $1 ||
+python -m python.format_message $1

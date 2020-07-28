@@ -1,0 +1,12 @@
+#!/bin/sh
+
+echo pre-commit called
+
+cd .hooks
+
+py -m python.update_version ||
+python -m python.update_version
+
+cd ..
+
+git add res/version.pydef
