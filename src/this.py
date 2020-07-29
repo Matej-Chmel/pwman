@@ -32,9 +32,10 @@ class Entry:
 	@staticmethod
 	def sort_key(item):
 		return item.ratio
-	def __init__(self, data: list, max_length):
-		for _ in range(max_length - len(data)):
-			data.append('')
+	def __init__(self, data: list, max_length=None):
+		if max_length is not None:
+			for _ in range(max_length - len(data)):
+				data.append('')
 		self.data = data
 		self.ratio = 0.0
 	def __str__(self):

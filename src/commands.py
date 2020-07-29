@@ -26,24 +26,23 @@ def command(help_string: str, requires_loaded_entries=True):
 	return wrap
 
 @command(
-	'add __name__ [default-value]\n'
-	'Adds a new header to all loaded entries '
-	'with default value or empty string.')
+	'add [value...]\n'
+	'Adds new entry.\n'
+	'Values are separated by tabs.\n'
+	'Missing values will be empty.\n'
+	'If no values are given, user will be prompted for data in interactive mode.\n'
+	'If values contain spaces, use interactive mode.'
+)
 def add(args: list):
-	if len(args) < 1:
-		raise WrongUsage('Command takes at least one argument.', 'add')
-	name = args.pop(0)
-	value = ' '.join(args)
-	if name in this.headers and confirm(f'Overwrite all values in header {name}?'):
-		for item in this.entries:
-			item.change(name, value)
-		print(f'Values for header {name} changed successfully.')
+	if not len(args):
+		this.entries.append(
+			Entry([input(f'Value for {header}: ') for header in this.headers])
+		)
 	else:
-		for item in this.entries:
-			item.add(value)
-		this.headers[name] = len(this.headers)
-		print(f'New header {name} successfully added.')
-	this.modified = True
+		this.entries.append(
+			Entry(args, len(this.headers))
+		)
+	print('Entry successfully added.')
 
 @command(
 	'Prints available backup files and '
@@ -134,6 +133,26 @@ def load(args: list):
 	backup(args, True)
 
 @command(
+	'newheader __name__ [default-value]\n'
+	'Adds a new header to all loaded entries '
+	'with default value or empty string.')
+def newheader(args: list):
+	if len(args) < 1:
+		raise WrongUsage('Command takes at least one argument.', 'add')
+	name = args.pop(0)
+	value = ' '.join(args)
+	if name in this.headers and confirm(f'Overwrite all values in header {name}?'):
+		for item in this.entries:
+			item.change(name, value)
+		print(f'Values for header {name} changed successfully.')
+	else:
+		for item in this.entries:
+			item.add(value)
+		this.headers[name] = len(this.headers)
+		print(f'New header {name} successfully added.')
+	this.modified = True
+
+@command(
 	'rename __header-name-or-idx__ __new-name__\n'
 	'Renames specified header.')
 def rename(args: list):
@@ -193,10 +212,11 @@ def select(args: list):
 	if len(args) != 1:
 		raise WrongUsage('Command takes exactly one argument.', 'select')
 	try:
-		this.selected = this.results[int(args[0]) - 1]
+		arg_idx = int(args[0])
+		this.selected = this.results[arg_idx - 1]
 		print('Selection was successful.')
 	except IndexError:
-		print(f'Index {args[0] - 1} is not accessible. Maximum index is {len(this.results)}.')
+		print(f'Index {arg_idx} is not accessible. Maximum index is {len(this.results)}.')
 	except ValueError:
 		print(f'{args[0]} could not be converted to an integer.')
 
