@@ -1,20 +1,36 @@
 from getpass import getpass
+from itertools import zip_longest
 from .cipher import decrypt, encrypt
 from .this import *
 
-def confirm(prompt):
+def confirm(prompt: str, hint='y/n', extra_true: list = None, extra_false: list = None):
+	options_true = ['y', 'yes', 'ok']
+	options_false = ['n', 'no', 'nope']
+	if extra_true:
+		options_true.extend(extra_true)
+	if extra_false:
+		options_false.extend(extra_false)
 	while True:
-		result = input(f'{prompt} (y/n): ').lower()
-		if result in ['y', 'yes', 'ok']:
+		result = input(f'{prompt} ({hint}): ').lower()
+		if result in options_true:
 			return True
-		if result in ['n', 'no', 'nope']:
+		if result in options_false:
 			return False
-		print('Please answer yes or no.')
+		print(f'Please choose an available option ({hint}).')
 
-def choice(prompt, options: list, return_idx=False):
-	print(f"""{f'{chr(10)}'.join([
-		f'{idx + 1}{chr(9)}{item}' for idx, item in enumerate(options)
-		])}{chr(10)}""")
+def choice(prompt, options: list, return_idx=False, values: list = None):
+	if values is None:
+		print(f"""{f'{chr(10)}'.join([
+			f'{idx + 1}{chr(9)}{item}' for idx, item in enumerate(options)
+			])}{chr(10)}"""
+		)
+	else:
+		print(f"""{f'{chr(10)}'.join([
+			f'{idx + 1}{chr(9)}{option}{chr(9)}{value}'
+			for idx, (option, value) in enumerate(
+				zip_longest(options, values, fillvalue='')
+			)])}{chr(10)}"""
+		)
 	while True:
 		try:
 			result = input(f'{prompt}: ')
@@ -102,16 +118,17 @@ def load_plaintext(plaintext: str, headers: bool, new_format: bool):
 	max_length = max([len(item) for item in data])
 	if headers:
 		# first pack contains header names
-		this.headers = {
-			name.replace(' ', '') if name else f'header-{idx + 1}' : idx
+		this.headers = [
+			name.replace(' ', '') if name else f'header-{idx + 1}'
 			for idx, name in enumerate(data.pop(0))
-		}
+		]
 		max_length = max(max_length, len(this.headers))
 	else:
 		this.headers = {}
+	# Assign default name to missing headers
 	for idx in range(len(this.headers), max_length):
 		this.headers[f'header-{idx + 1}'] = idx
-	unload_entries([Entry(item, max_length) for item in data], this.headers)
+	unload_entries([Entry(item, max_length) for item in data], False)
 	return True
 
 def save_entries():
@@ -136,6 +153,7 @@ def save_entries():
 				])}"""
 			)
 		)
-	backups.insert(0, join(DATA_DIR, filename))
+	backups.insert(0, filename)
+	this.modified = False
 	print('Save completed.')
 	return True

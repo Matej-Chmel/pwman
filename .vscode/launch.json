@@ -2,10 +2,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug src.main",
+            "name": "Debug pwman",
             "type": "python",
             "request": "launch",
-            "module": "src.main"
+			"module": "src.main"
         }
     ]
 }

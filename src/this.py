@@ -1,13 +1,15 @@
+from dataclasses import dataclass, asdict as dtc_asdict
 from datetime import datetime
 from difflib import SequenceMatcher
+from json import dumps as json_str, load as json_parse
 from glob import glob
 from os.path import abspath, basename, dirname, join, pardir, realpath
-from typing import Dict, List, Union
+from typing import List, Union
 
 REPO_DIR = abspath(join(dirname(realpath(__file__)), pardir))
 DATA_DIR = join(REPO_DIR, 'data')
+RES_DIR = join(REPO_DIR, 'res')
 BACKUP_FORMAT = 'b%d-%m-%Y_%H-%M-%S-%f.aes'
-MIGRATING = len(glob(f'{DATA_DIR}/ciphertext.aes')) != 0
 VERSION = None
 
 def data(filename, mode='r'):
@@ -16,11 +18,23 @@ def data(filename, mode='r'):
 def fopen(path, mode='r'):
 	return open(path, mode, encoding='utf-8')
 
+def res(filename, mode='r'):
+	return open(join(RES_DIR, filename), mode, encoding='utf-8')
+
 def similar(a, b):
 	return SequenceMatcher(None, a, b).ratio()
 
 def sort_backup(filename) -> datetime:
 	return datetime.strptime(filename, BACKUP_FORMAT)
+
+def read_version():
+	if VERSION is not None:
+		return VERSION
+	with res('version.pydef') as file:
+		try:
+			return (VERSION := int(file.read()))
+		except Exception:
+			return (VERSION := 0)
 
 class WrongUsage(Exception):
 	def __init__(self, message, cmdname=None):
@@ -56,27 +70,50 @@ class Entry:
 		else:
 			self.ratio = max([similar(self.data[idx], search) for idx in this.filters])
 
+@dataclass
+class Settings:
+	migrate_on_startup: bool = True
+	load_latest_on_startup: bool = False
+
 class this:
 	entries: List[Entry] = None
 	filters: List[int] = None
-	headers: Dict[str, int] = None
+	headers: List[str] = None
 	modified = False
 	results: List[Entry] = None
 	running = True
 	selected: Entry = None
 
-backups = sorted([basename(path) for path in glob(f'{DATA_DIR}/b*')], key=sort_backup, reverse=True)
-
-def unload_entries(entries=None, headers=None):
+def unload_entries(entries=None, clear_headers=True):
 	this.entries = entries
 	this.filters = None
-	this.headers = headers
+	if clear_headers:
+		this.headers = None
 	this.modified = False
 	this.results = this.entries
 	this.selected = None
 
-with open(join(REPO_DIR, 'res', 'version.pydef')) as file:
-	try:
-		VERSION = int(file.read())
-	except:
-		VERSION = 0
+backups = sorted([basename(path) for path in glob(f'{DATA_DIR}/b*')], key=sort_backup, reverse=True)
+stg = Settings()
+settings_keys = [key for key in dir(stg) if not key.startswith('__')]
+
+def save_settings():
+	with res('settings.json', 'w+') as file:
+		file.write(json_str(dtc_asdict(stg), indent='\t', sort_keys=True))
+	print('Settings saved successfully.')
+
+try:
+	with res('settings.json') as file:
+		try:
+			settings_dict = json_parse(file)
+			for key in settings_dict:
+				if hasattr(stg, key):
+					setattr(stg, key, settings_dict[key])
+				else:
+					print(f"'{key}' is not a settings property. It was ignored.")
+			del settings_dict
+		except Exception:
+			pass
+except OSError:
+	print('Settings not found. Creating default configuration.')
+	save_settings()

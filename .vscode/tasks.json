@@ -1,0 +1,29 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run pwman",
+			"type": "shell",
+			"command": "py",
+			"args": [
+				"-m",
+				"src.main",
+				"${input:arg_1}"
+			],
+			"problemMatcher": []
+		}
+	],
+	"inputs": [
+		{
+			"id": "arg_1",
+			"type": "pickString",
+			"description": "Choose argument:",
+			"options": [
+				"",
+				"v",
+				"--version"
+			],
+			"default": ""
+		}
+	]
+}

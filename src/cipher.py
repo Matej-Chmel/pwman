@@ -1,3 +1,14 @@
+'''
+Cryptographic functions.
+
+This file is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License.
+To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/.
+
+This file contains modified code snippets from Stack Overflow.
+Link to the original answer: https://stackoverflow.com/a/44212550/10732434
+Answered by zwer, link to profile: https://stackoverflow.com/users/7553525/zwer
+'''
+
 from base64 import b64encode, b64decode
 from Crypto import Random
 from Crypto.Cipher import AES

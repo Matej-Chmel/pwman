@@ -1,2 +1,4 @@
 __pycache__
 /.hooks/.token
+/.vscode/.ropeproject/
+/res/settings.json

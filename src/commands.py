@@ -18,6 +18,9 @@ class CommandDict(dict):
 
 actions = CommandDict()
 
+def not_recognized(cmdname: str):
+	print(f"Command '{cmdnamme}' not recognized.\nFor list of available commands type 'help'.")
+
 # decorator
 def command(help_string: str, requires_loaded_entries=True):
 	def wrap(action):
@@ -28,7 +31,7 @@ def command(help_string: str, requires_loaded_entries=True):
 @command(
 	'add [value...]\n'
 	'Adds new entry.\n'
-	'Values are separated by tabs.\n'
+	'Values are separated by spaces.\n'
 	'Missing values will be empty.\n'
 	'If no values are given, user will be prompted for data in interactive mode.\n'
 	'If values contain spaces, use interactive mode.'
@@ -106,7 +109,7 @@ def filter(args: list):
 	missing_header = next((header for header in args if header not in this.headers), None)
 	if missing_header is not None:
 		raise WrongUsage(f'Header {missing_header} is missing.', 'filter')
-	this.filters = [this.headers[item] for item in args]
+	this.filters = [this.headers.index(item) for item in args]
 	print('Filters set successfully.')
 
 @command('Prints current headers.')
@@ -124,12 +127,12 @@ def help(args: list):
 	try:
 		actions.print_help(args[0])
 	except KeyError:
-		print(f"Command {args[0]} not recognized.\nFor list of available commands type 'help'.")
+		not_recognized(args[0])
 
 @command(
 	'Attempts to load data from latest backup file.',
 	False)
-def load(args: list):
+def load(args: list = None):
 	backup(args, True)
 
 @command(
@@ -148,7 +151,7 @@ def newheader(args: list):
 	else:
 		for item in this.entries:
 			item.add(value)
-		this.headers[name] = len(this.headers)
+		this.headers.append(name)
 		print(f'New header {name} successfully added.')
 	this.modified = True
 
@@ -161,22 +164,22 @@ def rename(args: list):
 	header = args[0]
 	new_name = args[1]
 	try:
+		idx = int(header) - 1
 		# index was passed
-		header = int(header) - 1
-		reversed_headers = dict(zip(this.headers.values(), this.headers.keys()))
 		try:
-			header_name = reversed_headers[header]
-			this.headers[new_name] = this.headers.pop(header_name)
-			print(f'Header {header_name} successfully renamed to {new_name}.')
-		except KeyError:
-			raise WrongUsage(f'Header number {header + 1} not found.')
+			old_name = this.headers[idx]
+			this.headers[idx] = new_name
+			print(f'Header {old_name} successfully renamed to {new_name}.')
+		except IndexError:
+			raise WrongUsage(f'Header number {idx + 1} not found. Maximum index is {len(this.headers)}')
 	except ValueError:
 		# name was passed
 		try:
-			this.headers[new_name] = this.headers.pop(header)
+			this.headers[this.headers.index(header)] = new_name
 			print(f'Header {header} successfully renamed to {new_name}.')
-		except KeyError:
+		except ValueError:
 			raise WrongUsage(f'Header {header} not found.')
+	this.modified = True
 
 @command('Encrypts and saves data into a new file.')
 def save(args: list):
@@ -220,6 +223,33 @@ def select(args: list):
 	except ValueError:
 		print(f'{args[0]} could not be converted to an integer.')
 
+@command('Shows settings menu.', False)
+def settings(args: list):
+	global stg
+	while True:
+		selected: str = choice(
+			'Choose one of the values in lowercase to change it or '
+			'select a command in uppercase.\n'
+			'Use number to the left of your selected option',
+			settings_keys + ['SAVE', 'RESTORE DEFAULT SETTINGS', 'EXIT'], False,
+			[getattr(stg, key) for key in settings_keys]
+		)
+		if selected is None or selected.startswith('E'):
+			# exit
+			return
+		if selected.startswith('S'):
+			return save_settings()
+		if selected.startswith('RESTORE '):
+			stg = Settings()
+			print('Settings were restored to default values but they are not saved yet.\n')
+		else:
+			value = confirm(
+				'Choose value for the setting', 'on/off',
+				['on', 't', 'true'], ['off', 'f', 'false']
+			)
+			setattr(stg, selected, value)
+			print('Setting changed successfully.\n')
+
 @command(
 	'Removes search results and '
 	'displays loaded data that satisfies set filters.')
@@ -235,6 +265,6 @@ def unload(args: list):
 
 @command('Prints current version of the program.', False)
 def version(args: list = None):
-	print(f'Current version: {VERSION}')
+	print(f'Current version: {read_version()}')
 
 command(help_clear, False)(clear)
