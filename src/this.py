@@ -12,14 +12,20 @@ RES_DIR = join(REPO_DIR, 'res')
 BACKUP_FORMAT = 'b%d-%m-%Y_%H-%M-%S-%f.aes'
 VERSION = None
 
+def data_(filename):
+	return join(DATA_DIR, filename)
+
+def res_(filename):
+	return join(RES_DIR, filename)
+
 def data(filename, mode='r'):
-	return open(join(DATA_DIR, filename), mode, encoding='utf-8')
+	return open(data_(filename), mode, encoding='utf-8')
 
 def fopen(path, mode='r'):
 	return open(path, mode, encoding='utf-8')
 
 def res(filename, mode='r'):
-	return open(join(RES_DIR, filename), mode, encoding='utf-8')
+	return open(res_(filename), mode, encoding='utf-8')
 
 def similar(a, b):
 	return SequenceMatcher(None, a, b).ratio()
@@ -28,6 +34,7 @@ def sort_backup(filename) -> datetime:
 	return datetime.strptime(filename, BACKUP_FORMAT)
 
 def read_version():
+	global VERSION
 	if VERSION is not None:
 		return VERSION
 	with res('version.pydef') as file:
@@ -93,7 +100,7 @@ def unload_entries(entries=None, clear_headers=True):
 	this.results = this.entries
 	this.selected = None
 
-backups = sorted([basename(path) for path in glob(f'{DATA_DIR}/b*')], key=sort_backup, reverse=True)
+backups = sorted([basename(path) for path in glob(f"{data_('b*')}")], key=sort_backup, reverse=True)
 stg = Settings()
 settings_keys = [key for key in dir(stg) if not key.startswith('__')]
 

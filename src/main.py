@@ -1,5 +1,3 @@
-from os import renames as rename_file
-from pathlib import Path
 from sys import argv
 from .commands import *
 
@@ -30,14 +28,14 @@ def main():
 	
 	if (
 		stg.migrate_on_startup and
-		Path(ctext_path := f'{DATA_DIR}/ciphertext.aes').is_file() and
+		Path(ctext_path := f"{data_('ciphertext.aes')}").is_file() and
 		confirm('Do you want to migrate existing ciphertext.aes to a new format?')
 	):	
 		if load_ciphertext(ctext_path, False, False):
 			save_entries()
 			rename_file(
 				ctext_path,
-				f"{DATA_DIR}/{datetime.now().strftime('m' + BACKUP_FORMAT[1:])}"
+				f"{data_(datetime.now().strftime('m' + BACKUP_FORMAT[1:]))}"
 			)
 			print('Migrated successfully.')
 		else:

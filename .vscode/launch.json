@@ -6,6 +6,24 @@
             "type": "python",
             "request": "launch",
 			"module": "src.main"
-        }
+		},
+		{
+			"name": "Debug pwman, --version",
+            "type": "python",
+            "request": "launch",
+			"module": "src.main",
+			"args": [
+				"--version"
+			]
+		},
+		{
+			"name": "Debug with plaintext_1",
+			"type": "python",
+			"request": "launch",
+			"module": "src.main",
+			"args": [
+				"${workspaceFolder}/data/examples/plaintext_1.txt"
+			]
+		}
     ]
 }

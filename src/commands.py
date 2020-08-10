@@ -1,3 +1,5 @@
+from os import renames as rename_file
+from pathlib import Path
 from .logic import *
 from .specific import help_clear, clear
 
@@ -19,7 +21,7 @@ class CommandDict(dict):
 actions = CommandDict()
 
 def not_recognized(cmdname: str):
-	print(f"Command '{cmdnamme}' not recognized.\nFor list of available commands type 'help'.")
+	print(f"Command '{cmdname}' not recognized.\nFor list of available commands type 'help'.")
 
 # decorator
 def command(help_string: str, requires_loaded_entries=True):
@@ -37,40 +39,85 @@ def command(help_string: str, requires_loaded_entries=True):
 	'If values contain spaces, use interactive mode.'
 )
 def add(args: list):
-	if not len(args):
+	if not args:
 		this.entries.append(
 			Entry([input(f'Value for {header}: ') for header in this.headers])
 		)
 	else:
-		this.entries.append(
-			Entry(args, len(this.headers))
-		)
+		this.entries.append(Entry(args, len(this.headers)))
+	this.modified = True
 	print('Entry successfully added.')
 
 @command(
-	'Prints available backup files and '
-	'provides choice of loading data from backup.',
-	False)
-def backup(args: list, latest=False):
-	if len(backups) == 0:
+	'Prints available backup files and prompts user to choose one.\n'
+	'The user can load data from the selected backup or delete it.',
+	False
+)
+def backup(args: list):
+	if not backups:
 		print('No backups available.')
 		return
-	filename = None
-	if latest:
-		filename = backups[0]
-	else:
-		filename = choice('Choose backup file', backups)
+	while True:
+		filename, idx = choice(
+			"Choose a backup file by a number on the left or type 'exit' to leave the menu.\n",
+			backups, ChoiceReturnType.option_and_index
+		)
 		if filename is None:
-			print('No backup file choosen. Operation aborted.')
+			print('No backup file chosen. Exited the menu.')
 			return
-	print(
-		'Data loaded successfully.'
-		if load_ciphertext(join(DATA_DIR, filename), True, True)
-		else 'Operation aborted.')
+		print(f'File {filename} selected.')
+		option = choice(
+			'Select an option',
+			['Load', 'Delete', 'Cancel'],
+			ChoiceReturnType.index
+		)
+		if option in [None, 2]:
+			# cancel
+			print('Operation cancelled.')
+			continue
+		if option == 1:
+			# delete
+			# ensure that 'trash' folder exists
+			Path(data_('trash')).mkdir(parents=True, exist_ok=True)
+			# move selected file to trash
+			rename_file(
+				data_(filename),
+				join(DATA_DIR, 'trash', filename)
+			)
+			del backups[idx]
+			print("Selected file was moved to the app's trash folder.")
+			continue
+		# load
+		print(
+			'Data loaded successfully.'
+			if load_ciphertext(data_(filename))
+			else 'Operation aborted.')
+		return
+
+@command(
+	'delete [index]\n'
+	'Deletes entry at index in search results.\n'
+	"If index is not given, deletes entry selected by the 'select' command."
+)
+def delete(args: list):
+	if not args:
+		if this.selected is None:
+			raise WrongUsage('No entry is selected.', 'delete')
+		this.entries.remove(this.selected)
+	else:
+		try:
+			this.entries.remove(this.results[int(args[0]) - 1])
+		except IndexError:
+			raise WrongUsage(f'Entry number {args[0]} not found. Maximum index is {len(this.results)}.')
+		except ValueError:
+			raise WrongUsage(f"'{args[0]} could not be converted to integer.'", 'delete')
+	this.modified = True
+	print('Entry successfully deleted.')
 
 @command(
 	'edit __header-name-or-index__ __new value__\n'
-	"Edits data of the entry selected by 'select' command.")
+	"Edits data of the entry selected by 'select' command."
+)
 def edit(args: list):
 	if this.selected is None:
 		raise WrongUsage('No entry is selected.', 'edit')
@@ -91,7 +138,7 @@ def exit(args: list):
 				"Don't exit.",
 				'Save first then exit.',
 				'Exit without saving.'
-			], return_idx=True)
+			], ChoiceReturnType.index)
 		if result in [None, 0] or result == 1 and not save_entries():
 			print('Still running.')
 			return
@@ -100,9 +147,10 @@ def exit(args: list):
 @command(
 	'filter [header...]\n'
 	'Sets filters that affect other commands.\n'
-	'Empty filter means show all headers.')
+	'Empty filter means show all headers.'
+)
 def filter(args: list):
-	if not len(args):
+	if not args:
 		this.filters = None
 		print('Filters set to all headers.')
 		return
@@ -119,10 +167,11 @@ def headers(args: list):
 @command(
 	'help __command-name__\n'
 	'Prints help string for a given command.',
-	False)
+	False
+)
 def help(args: list):
 	if len(args) < 1:
-		print(f'Available commands:{chr(10)}{chr(10).join(sorted([name for name in actions]))}')
+		print(f'Available commands:{ENDL}{ENDL.join(sorted([name for name in actions]))}')
 		return
 	try:
 		actions.print_help(args[0])
@@ -131,14 +180,23 @@ def help(args: list):
 
 @command(
 	'Attempts to load data from latest backup file.',
-	False)
+	False
+)
 def load(args: list = None):
-	backup(args, True)
+	if not backups:
+		print('No backups available.')
+		return
+	print(
+		'Data loaded successfully.'
+		if load_ciphertext(data_(backups[0]))
+		else 'Operation aborted.'
+	)
 
 @command(
 	'newheader __name__ [default-value]\n'
 	'Adds a new header to all loaded entries '
-	'with default value or empty string.')
+	'with default value or empty string.'
+)
 def newheader(args: list):
 	if len(args) < 1:
 		raise WrongUsage('Command takes at least one argument.', 'add')
@@ -157,7 +215,8 @@ def newheader(args: list):
 
 @command(
 	'rename __header-name-or-idx__ __new-name__\n'
-	'Renames specified header.')
+	'Renames specified header.'
+)
 def rename(args: list):
 	if len(args) != 2:
 		raise WrongUsage('Command takes exactly two arguments.', 'rename')
@@ -189,7 +248,8 @@ def save(args: list):
 	'search __top__ __string__\n'
 	'Searches data that satisfies filters for a similarity match.\n'
 	'Argument top specifies how many results to show.\n'
-	'0 means all.')
+	'0 means all.'
+)
 def search(args: list):
 	if len(args) < 2:
 		raise WrongUsage('Command takes at least two arguments.', 'search')
@@ -210,7 +270,8 @@ def search(args: list):
 @command(
 	'select __index__\n'
 	'Selects an entry from search results '
-	"to be used with the 'edit' command.")
+	"to be used with the other commands like 'edit'."
+)
 def select(args: list):
 	if len(args) != 1:
 		raise WrongUsage('Command takes exactly one argument.', 'select')
@@ -227,33 +288,40 @@ def select(args: list):
 def settings(args: list):
 	global stg
 	while True:
-		selected: str = choice(
-			'Choose one of the values in lowercase to change it or '
+		option, idx = choice(
+			'Choose one of the flags in lowercase to change it or '
 			'select a command in uppercase.\n'
 			'Use number to the left of your selected option',
-			settings_keys + ['SAVE', 'RESTORE DEFAULT SETTINGS', 'EXIT'], False,
+			settings_keys + ['SAVE', 'RESTORE DEFAULT SETTINGS', 'EXIT'],
+			ChoiceReturnType.option_and_index,
 			[getattr(stg, key) for key in settings_keys]
 		)
-		if selected is None or selected.startswith('E'):
+		if idx in [None, len(settings_keys) + 2]:
 			# exit
 			return
-		if selected.startswith('S'):
+		if idx == len(settings_keys):
+			# save
 			return save_settings()
-		if selected.startswith('RESTORE '):
+		if idx == len(settings_keys) + 1:
+			# restore
 			stg = Settings()
 			print('Settings were restored to default values but they are not saved yet.\n')
 		else:
+			# flag was selected
 			value = confirm(
 				'Choose value for the setting', 'on/off',
 				['on', 't', 'true'], ['off', 'f', 'false']
 			)
-			setattr(stg, selected, value)
+			setattr(stg, option, value)
 			print('Setting changed successfully.\n')
 
 @command(
 	'Removes search results and '
-	'displays loaded data that satisfies set filters.')
+	'displays loaded data that satisfies set filters.'
+)
 def show(args: list):
+	if not this.entries:
+		return print('No entries exist.')
 	this.results = this.entries
 	print('\n\n'.join(f'{idx + 1}\n{item}' for idx, item in enumerate(this.entries)))
 
