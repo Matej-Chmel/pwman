@@ -1,34 +1,8 @@
 from os import renames as rename_file
 from pathlib import Path
-from .logic import *
-from .specific import help_clear, clear
-
-class CommandDict(dict):
-	def __init__(self):
-		super().__init__()
-	def call(self, command_name, args):
-		cmd = self[command_name]
-		if cmd[2] and this.entries is None:
-			print(
-				f'Command {command_name} requires data to be decrypted first.\n'
-				"Try commands 'load' or 'backup' first."
-			)
-		else:
-			cmd[0](args)
-	def print_help(self, command_name):
-		print(self[command_name][1])
-
-actions = CommandDict()
-
-def not_recognized(cmdname: str):
-	print(f"Command '{cmdname}' not recognized.\nFor list of available commands type 'help'.")
-
-# decorator
-def command(help_string: str, requires_loaded_entries=True):
-	def wrap(action):
-		actions[action.__name__] = (action, help_string, requires_loaded_entries)
-		return action
-	return wrap
+from .command_structure import *
+from .specific import clear
+from . import update
 
 @command(
 	'add [value...]\n'
@@ -174,7 +148,7 @@ def help(args: list):
 		print(f'Available commands:{ENDL}{ENDL.join(sorted([name for name in actions]))}')
 		return
 	try:
-		actions.print_help(args[0])
+		print_help(args[0])
 	except KeyError:
 		not_recognized(args[0])
 
@@ -332,7 +306,5 @@ def unload(args: list):
 	print('Data was unloaded.')
 
 @command('Prints current version of the program.', False)
-def version(args: list = None):
+def version(args = None):
 	print(f'Current version: {read_version()}')
-
-command(help_clear, False)(clear)

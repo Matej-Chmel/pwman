@@ -12,6 +12,7 @@ class ChoiceReturnType(Enum):
 	option = 0
 	index = 1
 	option_and_index = 2
+	value = 3
 
 def confirm(
 	prompt: str, hint='y/n',
@@ -58,7 +59,9 @@ def choice(
 				if not (0 <= idx < len(options)):
 					raise IndexError()
 				return idx
-			return options[idx], idx
+			if return_type == ChoiceReturnType.option_and_index:
+				return options[idx], idx
+			return values[idx]
 		except ValueError:
 			print(f'{result} could not be converted to integer.')
 		except IndexError:

@@ -47,11 +47,7 @@ def main():
 	while this.running:
 		try:
 			args = input('\nEnter command: ').split(' ')
-			print()
-			cmdname = args.pop(0)
-			actions.call(cmdname, args)
-		except KeyError:
-			not_recognized(cmdname)
+			call_command(args.pop(0), args)
 		except Exception as e:
 			print(e)
 

@@ -1,5 +1,6 @@
 import os
 from sys import platform
+from .command_structure import command
 
 help_clear = 'Clears the screen.'
 
@@ -17,3 +18,5 @@ else:
 	help_clear = 'Prints bunch of newlines. Your target platform is not listed in the code.'
 	def clear(args = None):
 		print(24 * '\n')
+
+command(help_clear, False)(clear)
