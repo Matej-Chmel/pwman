@@ -4,7 +4,7 @@ from .this import *
 
 URL = (
 	'https://api.github.com/repos/Matej-Chmel/'
-	'pwman/contents/res/version.pydef'
+	'pwman/contents/res/version.txt'
 )
 
 token = None

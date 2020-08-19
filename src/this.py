@@ -37,11 +37,8 @@ def read_version():
 	global VERSION
 	if VERSION is not None:
 		return VERSION
-	with res('version.pydef') as file:
-		try:
-			return (VERSION := int(file.read()))
-		except Exception:
-			return (VERSION := 0)
+	with res('version.txt') as file:
+		VERSION = file.read().rstrip('\n')
 
 class WrongUsage(Exception):
 	def __init__(self, message, cmdname=None):

@@ -1,3 +1,3 @@
-PyBluez-win10==0.22
+#PyBluez-win10==0.22
 pycryptodome==3.9.8
 requests==2.24.0

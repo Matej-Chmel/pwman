@@ -9,4 +9,4 @@ python -m python.update_version
 
 cd ..
 
-git add res/version.pydef
+git add res/version.txt
