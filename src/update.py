@@ -17,4 +17,4 @@ def system_call(text, success_message):
 def update(args = None):
 	# move into the root directory of this repository
 	cd(REPO_DIR)
-	system_call('git pull --tags origin master')
+	system_call('git pull --tags origin master', 'Update command completed execution.')

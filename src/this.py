@@ -35,10 +35,10 @@ def sort_backup(filename) -> datetime:
 
 def read_version():
 	global VERSION
-	if VERSION is not None:
-		return VERSION
-	with res('version.txt') as file:
-		VERSION = file.read().rstrip('\n')
+	if VERSION is None:
+		with res('version.txt') as file:
+			VERSION = file.read()
+	return VERSION
 
 class WrongUsage(Exception):
 	def __init__(self, message, cmdname=None):
