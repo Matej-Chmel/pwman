@@ -56,7 +56,7 @@ def main():
 	from stat import S_IEXEC as EXECUTE_PERMISSION
 
 	# List files without extension. Those are the hooks.
-	hooks = [file for file in glob(f'{REPO_DIR}/hooks/*') if '.' not in file]
+	hooks = [file for file in glob(f'{REPO_DIR}/.hooks/*') if '.' not in file]
 
 	# Add execute permission to a list of already granted permissions.
 	for file in hooks:
