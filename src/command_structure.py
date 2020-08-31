@@ -8,7 +8,7 @@ def call_command(name, args: list):
 		cmd = actions[name]
 		if cmd[2] and this.entries is None:
 			print(
-				f'Command {command_name} requires data to be decrypted first.\n'
+				f'Command {name} requires data to be decrypted first.\n'
 				"Try commands 'load' or 'backup' first."
 			)
 		else:
@@ -27,4 +27,4 @@ def not_recognized(cmdname):
 	print(f"Command '{cmdname}' not recognized.\nFor list of available commands type 'help'.")
 
 def print_help(command_name):
-		print(actions[command_name][1])
+	print(actions[command_name][1])

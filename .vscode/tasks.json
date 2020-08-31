@@ -17,7 +17,7 @@
 		{
 			"id": "arg_1",
 			"type": "pickString",
-			"description": "Choose argument:",
+			"description": "Choose an argument:",
 			"options": [
 				"",
 				"v",

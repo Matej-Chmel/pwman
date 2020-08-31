@@ -1,6 +1,7 @@
 from os import renames as rename_file
 from pathlib import Path
 from .command_structure import *
+from .drive import login_and_init, synchronize
 from .specific import clear
 from . import update
 
@@ -27,7 +28,7 @@ def add(args: list):
 	'The user can load data from the selected backup or delete it.',
 	False
 )
-def backup(args: list):
+def backup(args = None):
 	if not backups:
 		print('No backups available.')
 		return
@@ -104,7 +105,7 @@ def edit(args: list):
 	print('Entry successfully edited.')
 
 @command('Exits the program.', False)
-def exit(args: list):
+def exit(args = None):
 	if this.modified:
 		result = choice(
 			'Unsaved changes were detected. Choose what to do',
@@ -135,7 +136,7 @@ def filter(args: list):
 	print('Filters set successfully.')
 
 @command('Prints current headers.')
-def headers(args: list):
+def headers(args = None):
 	print(' '.join(this.headers))
 
 @command(
@@ -156,7 +157,7 @@ def help(args: list):
 	'Attempts to load data from latest backup file.',
 	False
 )
-def load(args: list = None):
+def load(args = None):
 	if not backups:
 		print('No backups available.')
 		return
@@ -215,7 +216,7 @@ def rename(args: list):
 	this.modified = True
 
 @command('Encrypts and saves data into a new file.')
-def save(args: list):
+def save(args = None):
 	save_entries()
 
 @command(
@@ -259,7 +260,7 @@ def select(args: list):
 		print(f'{args[0]} could not be converted to an integer.')
 
 @command('Shows settings menu.', False)
-def settings(args: list):
+def settings(args = None):
 	global stg
 	while True:
 		option, idx = choice(
@@ -293,14 +294,25 @@ def settings(args: list):
 	'Removes search results and '
 	'displays loaded data that satisfies set filters.'
 )
-def show(args: list):
+def show(args = None):
 	if not this.entries:
 		return print('No entries exist.')
 	this.results = this.entries
 	print('\n\n'.join(f'{idx + 1}\n{item}' for idx, item in enumerate(this.entries)))
 
+@command('Synchronizes this device and the cloud.', False)
+def sync(args = None):
+	if not login_and_init():
+		return print('Login into cloud aborted.')
+	if this.modified and confirm('Unsaved changes detected. Would you like to save them first?') and not save_entries():
+		return
+	if result := synchronize(backups[0] if backups else None):
+		backups.insert(0, result)
+		if confirm('Do you want to load the latest data?'):
+			load()
+
 @command('Forgets decrypted data.')
-def unload(args: list):
+def unload(args = None):
 	clear()
 	unload_entries()
 	print('Data was unloaded.')

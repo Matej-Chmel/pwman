@@ -15,11 +15,7 @@ cd(REPO_DIR)
 
 os_name = platform.system().lower()
 python = 'py' if os_name.startswith('win') else 'python'
-requirements_path = join(
-	REPO_DIR,
-	'run',
-	f"{'win10_' if os_name.startswith('win') and platform.release() == '10' else ''}requirements.txt"
-)
+requirements_path = join(REPO_DIR, 'run', 'requirements.txt')
 
 def command(text, success_message):
 	try:
