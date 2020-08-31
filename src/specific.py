@@ -1,4 +1,5 @@
 import os
+from subprocess import CalledProcessError, check_output, PIPE, Popen
 from sys import platform
 from .command_structure import command
 
