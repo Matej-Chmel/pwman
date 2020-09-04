@@ -1,7 +1,7 @@
 from os import chdir as cd
 from .command_structure import command
 from .specific import system_call
-from .this import read_version
+from .this import read_version, REPO_DIR
 
 @command('Pulls latest codebase from github.', False)
 def update(args = None):
