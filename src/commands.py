@@ -30,16 +30,14 @@ def add(args: list):
 )
 def backup(args = None):
 	if not backups:
-		print('No backups available.')
-		return
+		return print('No backups available.')
 	while True:
 		filename, idx = choice(
 			"Choose a backup file by a number on the left or type 'exit' to leave the menu.\n",
 			backups, ChoiceReturnType.option_and_index
 		)
 		if filename is None:
-			print('No backup file chosen. Exited the menu.')
-			return
+			return print('No backup file chosen. Exited the menu.')
 		print(f'File {filename} selected.')
 		option = choice(
 			'Select an option',
@@ -63,11 +61,10 @@ def backup(args = None):
 			print("Selected file was moved to the app's trash folder.")
 			continue
 		# load
-		print(
+		return print(
 			'Data loaded successfully.'
 			if load_ciphertext(data_(filename))
 			else 'Operation aborted.')
-		return
 
 @command(
 	'delete [index]\n'
@@ -115,8 +112,7 @@ def exit(args = None):
 				'Exit without saving.'
 			], ChoiceReturnType.index)
 		if result in [None, 0] or result == 1 and not save_entries():
-			print('Still running.')
-			return
+			return print('Still running.')
 	this.running = False
 
 @command(
@@ -127,8 +123,7 @@ def exit(args = None):
 def filter(args: list):
 	if not args:
 		this.filters = None
-		print('Filters set to all headers.')
-		return
+		return print('Filters set to all headers.')
 	missing_header = next((header for header in args if header not in this.headers), None)
 	if missing_header is not None:
 		raise WrongUsage(f'Header {missing_header} is missing.', 'filter')
@@ -146,8 +141,7 @@ def headers(args = None):
 )
 def help(args: list):
 	if len(args) < 1:
-		print(f'Available commands:{ENDL}{ENDL.join(sorted([name for name in actions]))}')
-		return
+		return print(f'Available commands:{ENDL}{ENDL.join(sorted([name for name in actions]))}')
 	try:
 		print_help(args[0])
 	except KeyError:
@@ -159,8 +153,7 @@ def help(args: list):
 )
 def load(args = None):
 	if not backups:
-		print('No backups available.')
-		return
+		return print('No backups available.')
 	print(
 		'Data loaded successfully.'
 		if load_ciphertext(data_(backups[0]))
@@ -232,8 +225,7 @@ def search(args: list):
 	try:
 		top = int(args[0])
 	except ValueError:
-		print(f'{args[0]} could not be converted to an integer.')
-		return
+		return print(f'{args[0]} could not be converted to an integer.')
 	args.pop(0)
 	search = ' '.join(args)
 	for item in this.entries:

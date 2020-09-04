@@ -33,9 +33,9 @@ def similar(a, b):
 def sort_backup(filename) -> datetime:
 	return datetime.strptime(filename, BACKUP_FORMAT)
 
-def read_version():
+def read_version(read_again=False):
 	global VERSION
-	if VERSION is None:
+	if VERSION is None or read_again:
 		with res('version.txt') as file:
 			VERSION = file.read()
 	return VERSION

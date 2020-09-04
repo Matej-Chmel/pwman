@@ -4,7 +4,6 @@ from pydrive.drive import GoogleDrive as Drive, GoogleDriveFile as File
 from .auth import gauth
 from .this import data, res_, sort_backup
 
-GoogleAuth.DEFAULT_SETTINGS['client_config_file'] = res_('client_secrets.json')
 FOLDER_TYPE = 'application/vnd.google-apps.folder'
 
 app_folder: File = None
@@ -37,6 +36,15 @@ def ensure_item(title: str, mime_type=None, parents=None, trashed=False):
 		return file
 
 def log_into_drive():
+	secrets_path = res_('client_secrets.json')
+
+	if not Path(secrets_path).is_file():
+		return print(
+			"File 'res/client_secrets.json' is missing.\n"
+			"Please refer to Installation section in 'README.md' in the root of this repo."
+		)
+
+	GoogleAuth.DEFAULT_SETTINGS['client_config_file'] = secrets_path
 	creds_path = res_('creds.json')
 
 	if Path(creds_path).is_file():

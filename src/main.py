@@ -2,22 +2,17 @@ from sys import argv
 from .commands import *
 
 def main():
-	if len(argv) > 2:
-		# wrong usage
-		print('Pwman expects 0 or 1 arguments but more were passed in.')
-		return
-	
-	if len(argv) == 2 and argv[1] in ['v', '--version']:
-		# show version number and exit
-		version()
-		return
-	
-	clear()
+	try:
+		option = argv[1]
 
-	if len(argv) == 2:
+		if option in ['v', '--version']:
+			return version()	# show version number and exit
+
+		clear()
+
 		# assume that the only argument is path to a file
 		# that contains plaintext and encrypt it
-		with fopen(argv[1]) as file:
+		with fopen(option) as file:
 			load_plaintext(
 				file.read(),
 				confirm('Does the source contain header definitions?'),
@@ -25,7 +20,9 @@ def main():
 			)
 		save_entries()
 		print('Plaintext was encrypted successfully.')
-	
+	except IndexError:
+		pass
+
 	if (
 		stg.migrate_on_startup and
 		Path(ctext_path := f"{data_('ciphertext.aes')}").is_file() and
