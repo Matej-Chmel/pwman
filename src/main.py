@@ -21,7 +21,7 @@ def main():
 		save_entries()
 		print('Plaintext was encrypted successfully.')
 	except IndexError:
-		pass
+		clear()
 
 	if (
 		stg.migrate_on_startup and
