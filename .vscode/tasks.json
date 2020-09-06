@@ -7,6 +7,16 @@
 			"command": "py",
 			"args": [
 				"-m",
+				"src.main"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "Run with arguments",
+			"type": "shell",
+			"command": "py",
+			"args": [
+				"-m",
 				"src.main",
 				"${input:arg_1}"
 			],
@@ -21,7 +31,9 @@
 			"options": [
 				"",
 				"v",
-				"--version"
+				"--version",
+				"${workspaceFolder}/data/examples/double_newline.txt",
+				"${workspaceFolder}/data/examples/tabs.txt"
 			],
 			"default": ""
 		}

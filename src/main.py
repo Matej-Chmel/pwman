@@ -1,5 +1,18 @@
 from sys import argv
+from traceback import print_exc
 from .commands import *
+
+def ask_command(prompt):
+	try:
+		args = input(prompt).split(' ')
+		call_command(args.pop(0), args)
+	except Exception:
+		print_exc()
+
+def start_cmdline():
+		clear()
+		if stg.print_newline_on_startup:
+			print()
 
 def main():
 	try:
@@ -8,20 +21,22 @@ def main():
 		if option in ['v', '--version']:
 			return version()	# show version number and exit
 
-		clear()
+		start_cmdline()
 
-		# assume that the only argument is path to a file
-		# that contains plaintext and encrypt it
+		# assume that the only argument is path to a file that contains plaintext
 		with fopen(option) as file:
 			load_plaintext(
 				file.read(),
 				confirm('Does the source contain header definitions?'),
-				confirm('Is the source split by double newlines?')
+				confirm('Is the source split by double newlines?'),
+				True
 			)
-		save_entries()
-		print('Plaintext was encrypted successfully.')
+		print(
+			'Plaintext was loaded successfully.\n'
+			"Check your data with the 'show' command and then 'save' it, 'unload' or 'exit'.\n"
+		)
 	except IndexError:
-		clear()
+		start_cmdline()
 
 	if (
 		stg.migrate_on_startup and
@@ -41,12 +56,9 @@ def main():
 	if stg.load_latest_on_startup:
 		load()
 
+	ask_command('Enter command: ')
 	while this.running:
-		try:
-			args = input('\nEnter command: ').split(' ')
-			call_command(args.pop(0), args)
-		except Exception as e:
-			print(e)
+		ask_command('\nEnter command: ')
 
 if __name__ == "__main__":
 	main()

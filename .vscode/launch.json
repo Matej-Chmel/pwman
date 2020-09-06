@@ -1,29 +1,33 @@
 {
     "version": "0.2.0",
     "configurations": [
+		{
+			"name": "Debug",
+            "type": "python",
+            "request": "launch",
+			"module": "src.main",
+		},
         {
-            "name": "Debug pwman",
-            "type": "python",
-            "request": "launch",
-			"module": "src.main"
-		},
-		{
-			"name": "Debug pwman, --version",
+            "name": "Debug with arguments",
             "type": "python",
             "request": "launch",
 			"module": "src.main",
 			"args": [
-				"--version"
-			]
-		},
-		{
-			"name": "Debug with plaintext_1",
-			"type": "python",
-			"request": "launch",
-			"module": "src.main",
-			"args": [
-				"${workspaceFolder}/data/examples/plaintext_1.txt"
+				"${input:arg_1}"
 			]
 		}
-    ]
+	],
+	"inputs": [
+		{
+			"id": "arg_1",
+			"type": "pickString",
+			"description": "Choose an argument:",
+			"options": [
+				"",
+				"v",
+				"--version"
+			],
+			"default": ""
+		}
+	]
 }

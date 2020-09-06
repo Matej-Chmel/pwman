@@ -2,5 +2,7 @@ __pycache__
 /.hooks/.token
 /.vscode/.ropeproject/
 /.vscode/settings.json
+/data/*
+!/data/examples/
 /res/*
 !/res/version.txt

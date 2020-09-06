@@ -3,16 +3,17 @@ from .logic import *
 actions = {}
 
 def call_command(name, args: list):
+	if not name:
+		return
 	print()
 	try:
 		cmd = actions[name]
 		if cmd[2] and this.entries is None:
-			print(
+			return print(
 				f'Command {name} requires data to be decrypted first.\n'
 				"Try commands 'load' or 'backup' first."
 			)
-		else:
-			cmd[0](args)
+		cmd[0](args)
 	except KeyError:
 		not_recognized(name)
 

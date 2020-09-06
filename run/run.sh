@@ -4,4 +4,4 @@
 cd $(dirname "$(readlink -f "$0")")/..
 
 # Run pwman.
-python -m src.main
+python -m src.main $@

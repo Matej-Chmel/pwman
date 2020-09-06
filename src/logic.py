@@ -77,9 +77,11 @@ def create_password():
 			return None
 
 def load_ciphertext(path, headers = True, new_format = True):
-	source: str = None
 	with fopen(path) as file:
 		source = file.read()
+	if not source:
+		unload_entries([])
+		return True
 	while True:
 		try:
 			return load_plaintext(
@@ -91,7 +93,7 @@ def load_ciphertext(path, headers = True, new_format = True):
 			if not confirm('Wrong password.\nTry again?'):
 				return False
 
-def load_plaintext(plaintext: str, headers: bool, new_format: bool):
+def load_plaintext(plaintext: str, headers: bool, new_format: bool, modified=False):
 	if this.modified:
 		result = choice(
 			'Current data is not saved. Choose one from the options above',
@@ -148,31 +150,36 @@ def load_plaintext(plaintext: str, headers: bool, new_format: bool):
 	# Assign default name to missing headers
 	for idx in range(len(this.headers), max_length):
 		this.headers.append(f'header-{idx + 1}')
-	unload_entries([Entry(item, max_length) for item in data], False)
+	unload_entries([Entry(item, max_length) for item in data], False, modified)
 	return True
 
 def save_entries():
-	key = create_password()
-	if key is None:
-		print('Nothing was saved.')
-		return False
-	filename = datetime.now().strftime(BACKUP_FORMAT)
-	with data(filename, 'w+') as file:
-		file.write(
-			encrypt(
-				key,
-				f"{ENDL.join(this.headers)}{ENDL}{ENDL}"
-				f"""{f'{ENDL}{ENDL}'.join([
-					f'{ENDL}'.join([
-						'#' if item == '' else
-						f'#{item}' if item.startswith('#') else
-						item
-						for item in entry.data
-					])
-					for entry in this.entries
-				])}"""
+	if not this.entries:
+		filename = datetime.now().strftime(BACKUP_FORMAT)
+		with data(filename, 'w+') as file:
+			pass
+	else:
+		key = create_password()
+		if key is None:
+			print('Nothing was saved.')
+			return False
+		filename = datetime.now().strftime(BACKUP_FORMAT)
+		with data(filename, 'w+') as file:
+			file.write(
+				encrypt(
+					key,
+					f"{ENDL.join(this.headers)}{ENDL}{ENDL}"
+					f"""{f'{ENDL}{ENDL}'.join([
+						f'{ENDL}'.join([
+							'#' if item == '' else
+							f'#{item}' if item.startswith('#') else
+							item
+							for item in entry.data
+						])
+						for entry in this.entries
+					])}"""
+				)
 			)
-		)
 	backups.insert(0, filename)
 	this.modified = False
 	print('Save completed.')

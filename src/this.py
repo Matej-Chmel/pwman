@@ -78,6 +78,7 @@ class Entry:
 class Settings:
 	migrate_on_startup: bool = True
 	load_latest_on_startup: bool = False
+	print_newline_on_startup: bool = False
 
 class this:
 	entries: List[Entry] = None
@@ -88,12 +89,12 @@ class this:
 	running = True
 	selected: Entry = None
 
-def unload_entries(entries=None, clear_headers=True):
+def unload_entries(entries=None, clear_headers=True, modified=False):
 	this.entries = entries
 	this.filters = None
 	if clear_headers:
-		this.headers = None
-	this.modified = False
+		this.headers = None if entries is None else []
+	this.modified = modified
 	this.results = this.entries
 	this.selected = None
 

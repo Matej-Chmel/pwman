@@ -67,6 +67,27 @@ def backup(args = None):
 			else 'Operation aborted.')
 
 @command(
+	'Creates an empty backup file.\n'
+	'If another backup is already opened with unsaved changes, you will be asked to save them first.',
+	False
+)
+def create(args = None):
+	if this.modified:
+		result = choice(
+			'Unsaved changes were detected. Choose what to do',
+			[
+				"Don't create a new backup.",
+				'Save first then create a new backup.',
+				'Create a new backup without saving the previous one.'
+			], ChoiceReturnType.index)
+		if result in [None, 0]:
+			return print('Operation aborted.')
+		if result == 1:
+			save_entries()
+	unload_entries([], modified=True)
+	print('New backup created.')
+
+@command(
 	'delete [index]\n'
 	'Deletes entry at index in search results.\n'
 	"If index is not given, deletes entry selected by the 'select' command."
@@ -132,7 +153,7 @@ def filter(args: list):
 
 @command('Prints current headers.')
 def headers(args = None):
-	print(' '.join(this.headers))
+	print(' '.join(this.headers) if this.headers else "No headers exist.\nYou can add them with the 'newheader' command.")
 
 @command(
 	'help __command-name__\n'

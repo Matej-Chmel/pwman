@@ -1,0 +1,4 @@
+site				username		password
+example.com			somebody		strongpwd123		deprecated
+en.site.org			cj
+test.com			#				123654789
