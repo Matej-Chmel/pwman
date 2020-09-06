@@ -2,18 +2,22 @@ from base64 import b64decode
 from requests import get, codes
 from .this import *
 
-URL = (
-	'https://api.github.com/repos/Matej-Chmel/'
-	'pwman/contents/res/version.txt'
-)
-
-token = None
+REPO_URL = 'https://api.github.com/repos/Matej-Chmel/pwman'
+VERSION_URL = f'{REPO_URL}/contents/res/version.txt'
 
 try:
-	with open(TOKEN_PATH) as file:
-		token = file.read()
+	request = get(REPO_URL)
 
-	request = get(URL, headers={'Authorization': f'token {token}'})
+	if request.status_code == codes.ok: #pylint: disable=no-member
+		print('Repository is public.')
+		request = get(VERSION_URL)
+	else:
+		# repo might be private, it doesn't exist or other error occurred
+		print('Repository might be private. Reading token.')
+		with open(TOKEN_PATH) as file:
+			token = file.read()
+
+		request = get(VERSION_URL, headers={'Authorization': f'token {token}'})
 
 	if request.status_code == codes.ok: #pylint: disable=no-member
 		print('Reading latest version from github.')
