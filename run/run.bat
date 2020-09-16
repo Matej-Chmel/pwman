@@ -6,4 +6,4 @@ set script_dir=%script_dir:~0, -1%
 cd %script_dir%\..
 
 rem Run pwman.
-cmd py -m src.main %*
+py -m src.main %*
